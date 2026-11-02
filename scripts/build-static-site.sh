@@ -17,6 +17,8 @@
 #   PAGES_CONFIGURED, PAGES_BASE_PATH, PAGES_BASE_URL  set by the workflow from actions/configure-pages
 #   LIVE_URL             a live installation for search, login and forms ('' leaves those links out)
 #   MAX_PAGES            the most pages the build stores (default 10000)
+#   CRAWL_URL            the address the build reads the site from (default: with a database from data/,
+#                        http://127.0.0.1:<port>/; with a package, the SiteURL of the siteaccess)
 #   WORK                 the work folder (default ./build)
 set -euo pipefail
 
@@ -77,7 +79,9 @@ for f in "$ROOT/data/database.sqlite" "$ROOT/data/database.db" "$ROOT/data/datab
 done
 SITE_INI="$ROOT/site/settings/override/site.ini.append.php"
 
+CRAWL_URL=${CRAWL_URL:-}
 if [ -n "$DB_FILE" ]; then
+    CRAWL_URL=${CRAWL_URL:-http://127.0.0.1:$PORT/}
     say "Site from the database $(basename "$DB_FILE") and the settings of site/"
     [ -f "$SITE_INI" ] || fail "data/ holds a database, so site/settings/override/site.ini.append.php must hold the site's settings"
     SITE_DATABASE_NAME=${SITE_DATABASE_NAME:-$(ini_value "$SITE_INI" Database)}
@@ -92,7 +96,7 @@ else
     package_name=${SITE_PACKAGE:-}
     [ -n "$package_name" ] || package_name="the default package of the installer"
     say "Site from a package: exp:install, $package_name"
-    args=(--apply --db=sqlite --access=url --site-access="$SITE_ACCESS" --random-password --title="${SITE_TITLE:-Exponential static site}")
+    args=(--apply --db=sqlite --access=url --url="http://127.0.0.1:$PORT" --site-access="$SITE_ACCESS" --random-password --title="${SITE_TITLE:-Exponential static site}")
     [ -n "${SITE_PACKAGE:-}" ] && args+=(--package="$SITE_PACKAGE")
     php bin/php/console exp:install "${args[@]}"
 fi
@@ -135,7 +139,7 @@ Delivery=actions
 Links=relative
 BasePath=$BASE_PATH
 PublicURL=$PUBLIC_URL
-CrawlURL=http://127.0.0.1:$PORT/
+CrawlURL=$CRAWL_URL
 LiveURL=$LIVE_URL
 MaxPages=$MAX_PAGES
 ExcludePaths[]
