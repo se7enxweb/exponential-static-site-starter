@@ -7,7 +7,7 @@
 # exp:static:diff --check-links. The GitHub Actions workflow runs it; it runs the same way on your own computer.
 #
 # Settings (environment variables, all optional):
-#   EXPONENTIAL_VERSION  Composer constraint of se7enxweb/exponential (default ^6.0.15)
+#   EXPONENTIAL_VERSION  Composer constraint of se7enxweb/exponential (default dev-main until 6.0.15 is released)
 #   SITE_PACKAGE         the site package exp:install installs when data/ holds no database (default: the installer's)
 #   SITE_ACCESS          the front siteaccess that is published (default site)
 #   SITE_DATABASE_NAME   file name of the SQLite database in var/storage/sqlite3 (default: Database= of
@@ -25,7 +25,7 @@ WORK=${WORK:-$ROOT/build}
 APP=$WORK/exponential
 OUT=$WORK/site
 PORT=${PORT:-8080}
-EXPONENTIAL_VERSION=${EXPONENTIAL_VERSION:-^6.0.15}
+EXPONENTIAL_VERSION=${EXPONENTIAL_VERSION:-dev-main}
 SITE_ACCESS=${SITE_ACCESS:-site}
 MAX_PAGES=${MAX_PAGES:-10000}
 LIVE_URL=${LIVE_URL:-}

@@ -31,8 +31,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Composer constraint of Exponential; static publishing needs 6.0.15 or newer.
-  EXPONENTIAL_VERSION: "^6.0.15"
+  # Composer constraint of Exponential. Static publishing needs 6.0.15 or newer; until 6.0.15 is released the
+  # starter installs the main branch. Pin a release (for example "^6.0.15") once there is one.
+  EXPONENTIAL_VERSION: "dev-main"
   PHP_VERSION: "8.3"
   # The site package exp:install installs when data/ holds no database ('' = the installer's default).
   SITE_PACKAGE: ""

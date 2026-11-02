@@ -10,7 +10,8 @@ This repository is a template. Click **Use this template**, add your site, switc
 
 The workflow `.github/workflows/static-site.yml` runs `scripts/build-static-site.sh`, which:
 
-1. installs Exponential 6.0.15 or newer with Composer (`se7enxweb/exponential`);
+1. installs Exponential with Composer (`se7enxweb/exponential`; static publishing is new in 6.0.15, so until that
+   release is out the starter installs the main branch);
 2. brings in your site: a database from `data/` plus the code and settings of `site/`, or, when `data/` holds no
    database, a site package installed with `exp:install`;
 3. serves the site on `127.0.0.1` with PHP's built-in web server;
@@ -60,7 +61,7 @@ The `env:` block of the workflow holds the settings:
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `EXPONENTIAL_VERSION` | `^6.0.15` | Composer constraint of Exponential |
+| `EXPONENTIAL_VERSION` | `dev-main` | Composer constraint of Exponential: the main branch until 6.0.15 is released, then pin `^6.0.15` |
 | `PHP_VERSION` | `8.3` | PHP of the build |
 | `SITE_PACKAGE` | empty | The site package to install when `data/` holds no database |
 | `SITE_ACCESS` | `site` | The front siteaccess that is published |
