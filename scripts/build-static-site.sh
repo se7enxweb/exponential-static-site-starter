@@ -147,6 +147,7 @@ MaxPages=$MAX_PAGES
 ExcludePaths[]
 ExcludePaths[]=/user/*
 ExcludePaths[]=/shop/*
+ExcludePaths[]=/tags/*
 
 */ ?>
 INI
