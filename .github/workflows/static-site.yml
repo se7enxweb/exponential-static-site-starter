@@ -1,0 +1,96 @@
+# Builds a static copy of the Exponential site of this repository and deploys it to GitHub Pages.
+#
+# The build (scripts/build-static-site.sh) installs Exponential with Composer, brings in the site from data/ and
+# site/ (or installs a site package), serves it on 127.0.0.1 and runs exp:static:build and the link check.
+# The deploy publishes build/site with GitHub's own Pages actions: no token and no gh-pages branch are needed.
+#
+# One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions.
+# The template repository itself only builds; it never deploys.
+name: Static site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy to GitHub Pages after the build
+        type: boolean
+        default: true
+  # Rebuild every night, so content dated to appear shows up without a push:
+  # schedule:
+  #   - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # Composer constraint of Exponential; static publishing needs 6.0.15 or newer.
+  EXPONENTIAL_VERSION: "^6.0.15"
+  PHP_VERSION: "8.3"
+  # The site package exp:install installs when data/ holds no database ('' = the installer's default).
+  SITE_PACKAGE: ""
+  # The front siteaccess that is published.
+  SITE_ACCESS: site
+  # A live installation for search, login and forms ('' leaves those links out of the copy).
+  LIVE_URL: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: curl, gd, intl, mbstring, pdo_sqlite, sqlite3, sodium, xsl, zip, exif
+          ini-values: memory_limit=1G, date.timezone=UTC
+          tools: composer:v2
+
+      - name: Pages address
+        id: pages
+        if: ${{ !github.event.repository.is_template }}
+        uses: actions/configure-pages@v5
+
+      - name: Build the static copy
+        env:
+          PAGES_CONFIGURED: ${{ steps.pages.outcome == 'success' }}
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+        run: bash scripts/build-static-site.sh
+
+      - name: Build report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-build-report
+          path: |
+            build/static-build.json
+            build/php-server.log
+            build/exponential/var/log/
+          if-no-files-found: ignore
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site
+
+  deploy:
+    needs: build
+    if: ${{ !github.event.repository.is_template && (github.event_name != 'workflow_dispatch' || inputs.deploy) }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
